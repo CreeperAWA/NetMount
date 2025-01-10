@@ -11,11 +11,11 @@ jobs:
       fail-fast: false
       matrix:
         settings:
-          - platform: "macos-latest" # for Arm based macs (M1 and above).
+          - platform: "macos-latest"
             args: "--target aarch64-apple-darwin"
-          - platform: "macos-latest" # for Intel based macs.
+          - platform: "macos-latest"
             args: "--target x86_64-apple-darwin"
-          - platform: "ubuntu-22.04" # for Tauri v1 you could replace this with ubuntu-20.04.
+          - platform: "ubuntu-22.04"
             args: ""
           - platform: "windows-latest"
             args: ""
@@ -32,18 +32,17 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.settings.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install dependencies (windows only)
         if: matrix.settings.platform == 'windows-latest' 
         run: |
-          # Remove or modify windows-specific dependency installation commands if needed
+          # Windows-specific commands
 
       - name: install dependencies (macos only)
         if: matrix.settings.platform == 'macos-latest'
         run: |
-          # Remove or modify macos-specific dependency installation commands if needed
+          # MacOS-specific commands
 
       - name: install dependencies (ubuntu only)
         if: matrix.settings.platform == 'ubuntu-22.04' 
@@ -82,3 +81,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           args: ${{ matrix.settings.args }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-${{ matrix.settings.platform }}-${{ github.sha }}
+          path: |
+            src-tauri/target/release/*
